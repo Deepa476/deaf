@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "861585927967",
-    "project_id": "deafandmute-46a12",
-    "storage_bucket": "deafandmute-46a12.firebasestorage.app"
+    "project_number": "787838582749",
+    "project_id": "images-37928",
+    "storage_bucket": "images-37928.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:861585927967:android:a267e1390d029cdf64ca2a",
+        "mobilesdk_app_id": "1:787838582749:android:6d6e0109f7f1bb1c5ec034",
         "android_client_info": {
           "package_name": "com.example.deaf"
         }
@@ -15,7 +15,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyChb0oJU4HpC0jhl2Nn_JJlF6gdFTJGtys"
+          "current_key": "AIzaSyBH5ur-g0BmmI_Nr8TfDyHgEPY75mHlbis"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:787838582749:android:54acd77d35f5f1b25ec034",
+        "android_client_info": {
+          "package_name": "com.example.supabaseuupload"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBH5ur-g0BmmI_Nr8TfDyHgEPY75mHlbis"
         }
       ],
       "services": {

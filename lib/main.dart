@@ -1,18 +1,24 @@
+// main.dart
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'signup.dart'; // Import the signup page
 import 'choose_action.dart'; // Import the choose action page
 import 'ProfilePage.dart';
-// import 'image_upload.dart';
+import 'firebase_options.dart'; // Import the generated Firebase options
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-
 const supabaseUrl = "https://maatgqzlgvtqhywmblge.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hYXRncXpsZ3Z0cWh5d21ibGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MzkxNTgsImV4cCI6MjA1ODExNTE1OH0.gskfEPsNhwzeOeO_eTeLSGR8wVm_Uoivl-ZWOkMJALg"; // Replace with your real key
-
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hYXRncXpsZ3Z0cWh5d21ibGdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI1MzkxNTgsImV4cCI6MjA1ODExNTE1OH0.gskfEPsNhwzeOeO_eTeLSGR8wVm_Uoivl-ZWOkMJALg";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase with the platform-specific options
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize Supabase
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
 
   runApp(MyApp());
@@ -27,6 +33,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/signup': (context) => const SignUpScreen(),
         '/choose': (context) => const ChooseActionPage(),
+        '/profile': (context) => const ProfilePage(),
       },
     );
   }
@@ -108,10 +115,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ProfilePage()),
-                        );
+                        Navigator.pushNamed(context, '/profile');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -133,14 +137,20 @@ class LoginScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Not registered? ', style: TextStyle(color: Colors.black)),
+                        const Text(
+                          'Not registered? ',
+                          style: TextStyle(color: Colors.black),
+                        ),
                         GestureDetector(
                           onTap: () {
                             Navigator.pushNamed(context, '/signup');
                           },
                           child: const Text(
                             'Create an account',
-                            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
