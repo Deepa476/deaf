@@ -1,10 +1,12 @@
 // main.dart
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'signup.dart'; // Import the signup page
-import 'choose_action.dart'; // Import the choose action page
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
+import 'signup.dart';
+import 'choose_action.dart';
 import 'ProfilePage.dart';
-import 'firebase_options.dart'; // Import the generated Firebase options
+import 'firebase_options.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 const supabaseUrl = "https://maatgqzlgvtqhywmblge.supabase.co";
@@ -13,7 +15,7 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with the platform-specific options
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -29,9 +31,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const LoginScreen(), // Set LoginScreen as the initial screen
+      home: const LoginScreen(),
       routes: {
-        '/signup': (context) => const SignUpScreen(),
+        '/signup': (context) => SignUpScreen(),
         '/choose': (context) => const ChooseActionPage(),
         '/profile': (context) => const ProfilePage(),
       },
@@ -42,8 +44,44 @@ class MyApp extends StatelessWidget {
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
+  Future<void> _loginUser(BuildContext context, String email, String password) async {
+    try {
+      // Sign in with Firebase Auth
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Login successful
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Login successful!')),
+      );
+      Navigator.pushNamed(context, '/profile');
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+      if (e.code == 'user-not-found') {
+        errorMessage = 'User not registered.';
+      } else if (e.code == 'wrong-password') {
+        errorMessage = 'Incorrect password.';
+      } else {
+        errorMessage = 'An error occurred during login.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      print('Login error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An error occurred during login.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
     return Scaffold(
       backgroundColor: Colors.blue,
       body: Center(
@@ -89,6 +127,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         hintText: 'Enter your email',
                         filled: true,
@@ -101,6 +140,7 @@ class LoginScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Enter your password',
@@ -115,7 +155,9 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/profile');
+                        final email = emailController.text.trim();
+                        final password = passwordController.text.trim();
+                        _loginUser(context, email, password);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,

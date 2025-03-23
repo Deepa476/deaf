@@ -1,12 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SignUpScreen extends StatelessWidget {
-  const SignUpScreen({super.key});
+  SignUpScreen({super.key});
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  Future<void> signUpUser(BuildContext context) async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final confirmPassword = confirmPasswordController.text.trim();
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    try {
+      // Create user in Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      // Store user data in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user?.uid)
+          .set({
+        'email': email,
+        'createdAt': DateTime.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sign Up Successful')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue, // Background color blue
+      backgroundColor: Colors.blue,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -14,11 +56,11 @@ class SignUpScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text(
-                'Welcome to Signyyy', // Added this text
+                'Welcome to Signyyy',
                 style: TextStyle(
-                  fontSize: 32, // Bigger font size
+                  fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white, // White text color
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 40),
@@ -50,6 +92,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         hintText: 'Enter your email',
                         filled: true,
@@ -62,6 +105,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: passwordController,
                       decoration: InputDecoration(
                         hintText: 'Create a password',
                         filled: true,
@@ -75,6 +119,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
+                      controller: confirmPasswordController,
                       decoration: InputDecoration(
                         hintText: 'Confirm your password',
                         filled: true,
@@ -88,7 +133,7 @@ class SignUpScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => signUpUser(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -115,8 +160,7 @@ class SignUpScreen extends StatelessWidget {
                         ),
                         GestureDetector(
                           onTap: () {
-                            // Navigate to the Login page
-                            Navigator.pop(context); // Navigate back to login
+                            Navigator.pop(context);
                           },
                           child: const Text(
                             'Login',

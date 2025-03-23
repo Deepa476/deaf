@@ -22,8 +22,8 @@ class _ConvertPageState extends State<ConvertPage> {
   bool _isCapturing = false;
   String detectedText = "Waiting for prediction...";
   String currentLanguage = "English";
-  final String apiUrlEnglish = 'http://192.168.1.6:5000/predict';
-  final String apiUrlGujarati = 'http://192.168.1.6:5000/predict';
+  final String apiUrlEnglish = 'http://192.168.1.6:5000/predict/english';
+  final String apiUrlGujarati = 'http://192.168.1.6:5000/predict/gujarati';
 
   @override
   void initState() {
