@@ -1,7 +1,9 @@
 import 'package:deaf/Animals.dart';
+import 'package:deaf/NumbersPage.dart'; // Already imported
 import 'package:deaf/ProfilePage.dart';
 import 'package:deaf/ProgressTracking.dart';
 import 'package:deaf/choose_action.dart';
+import 'package:deaf/settingpage.dart';
 import 'package:flutter/material.dart';
 import 'AlphabetsPage.dart'; // Import the Alphabets page
 import 'WordModuleCard.dart';
@@ -19,46 +21,41 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
- void _onItemTapped(int index) {
-  setState(() {
-    _selectedIndex = index;
-  });
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
 
-  // Navigation logic for each bottom navigation item
-  switch (index) {
-    case 0: // Home
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ChooseActionPage()),
-      );
-      break;
-    case 1: // Courses
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => LearningModulesPage()),
-      );
-      break;
-    case 2: // Assignment (Progress Tracking)
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProgressTracking()),
-      );
-      break;
-    case 3: // Settings
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfilePage()),
-      );
-      break;
-    case 4: // Profile
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfilePage()),
-      );
-      break;
+    // Navigation logic for each bottom navigation item
+    switch (index) {
+      case 0: // Home
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ChooseActionPage()),
+        );
+        break;
+      case 1: // Courses (Already on LearningModulesPage, no navigation needed)
+        break;
+      case 2: // Assignment (Progress Tracking)
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProgressTracking()),
+        );
+        break;
+      case 3: // Settings
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => SettingsPage()),
+        );
+        break;
+      case 4: // Profile
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
+        break;
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +63,7 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
     final List<Map<String, String>> modules = [
       {'name': 'Alphabets', 'gujarati': 'અક્ષરમાળા'},
       {'name': 'Words', 'gujarati': 'શબ્દો'},
-      {'name': 'Numbers', 'gujarati': 'અંક'},
+      {'name': 'Numbers', 'gujarati': 'અંક'}, // Numbers module already present
       {'name': 'Animals', 'gujarati': 'પ્રાણીઓ'},
       {'name': 'Colors', 'gujarati': 'રંગો'},
       {'name': 'Shapes', 'gujarati': 'આકારો'},
@@ -96,12 +93,12 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Signyy',
           style: TextStyle(color: Colors.lightBlue), // Blue text for the title
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.lightBlue), // Blue back arrow
+          icon: const Icon(Icons.arrow_back, color: Colors.lightBlue), // Blue back arrow
           onPressed: () {
             Navigator.pop(context); // Navigates back to the previous page
           },
@@ -118,7 +115,7 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search modules...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                   borderSide: BorderSide.none,
@@ -137,7 +134,7 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
           Container(
             color: Colors.lightBlue, // Light blue background
             padding: const EdgeInsets.all(16.0),
-            child: Text(
+            child: const Text(
               'Learning Modules',
               style: TextStyle(
                 fontSize: 24,
@@ -180,13 +177,17 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
                         context,
                         MaterialPageRoute(builder: (context) => VegetableList()),
                       );
-                    }
-                    else if (filteredModules[index]['name'] == 'Animals') {
+                    } else if (filteredModules[index]['name'] == 'Animals') {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => AnimalApp()),
                       );
-                    } 
+                    } else if (filteredModules[index]['name'] == 'Numbers') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => NumbersPage()),
+                      );
+                    }
                     // Add more conditions if you have other specific pages
                   },
                 );
@@ -196,35 +197,34 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
         ],
       ),
       backgroundColor: Colors.lightBlue, // Light blue background for the page body
-     bottomNavigationBar: BottomNavigationBar(
-  type: BottomNavigationBarType.fixed,
-  items: const <BottomNavigationBarItem>[
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.menu_book),
-      label: 'Courses',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.assignment),
-      label: 'Assignment',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.settings),
-      label: 'Settings',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.person),
-      label: 'Profile',
-    ),
-  ],
-  currentIndex: _selectedIndex,
-  selectedItemColor: Colors.lightBlue,
-  onTap: _onItemTapped,
-),
-
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Courses',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.assignment),
+            label: 'Assignment',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.lightBlue,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
@@ -241,7 +241,7 @@ class ModuleCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap, // Trigger action when card is tapped
       child: Card(
-        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -249,16 +249,16 @@ class ModuleCard extends StatelessWidget {
             children: [
               Text(
                 moduleName,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.lightBlue, // Light blue text for module name
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 gujaratiTranslation,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 18,
                   color: Colors.black, // Black text for Gujarati translation
                 ),

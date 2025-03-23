@@ -1,9 +1,33 @@
+import 'dart:io' if (dart.library.html) 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:flutter/foundation.dart' show Uint8List, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Profile Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      initialRoute: '/profile',
+      routes: {
+        '/profile': (context) => const ProfilePage(),
+        // Add your '/login' and '/choose' routes here as needed
+      },
+    );
+  }
+}
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -13,149 +37,174 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  double progress = 0.0;
-  String? profileImageUrl;
-  final TextEditingController nameController = TextEditingController();
-  String email = "Loading...";
-  String uid = "Loading...";
-  User? user;
-  bool isLoading = true;
-  bool isEditingName = false; // Track if the username is being edited
-  bool isUserNameNull = false; // Track if username is null in Firestore
+  double _progress = 0.0;
+  String? _profileImageUrl;
+  late final TextEditingController _nameController;
+  String _email = "Loading...";
+  String _uid = "Loading...";
+  firebase_auth.User? _currentUser;
+  bool _isLoading = true;
+  bool _isEditingName = false;
+  bool _isUserNameNull = false;
+
+  final _auth = firebase_auth.FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  final _supabase = Supabase.instance.client;
+  final _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
     _initializeUser();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeUser() async {
-    user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await _loadProfileData();
-    } else {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
+    try {
+      _currentUser = _auth.currentUser;
+      if (_currentUser != null) {
+        await _loadProfileData();
+      } else {
+        _redirectToLogin();
       }
+    } catch (e) {
+      _handleError('Initialization error: $e');
     }
   }
 
   Future<void> _loadProfileData() async {
-    if (user == null) return;
+    if (_currentUser == null) return;
 
     try {
       setState(() {
-        email = user!.email ?? "No email available";
-        uid = user!.uid;
+        _email = _currentUser!.email ?? "No email available";
+        _uid = _currentUser!.uid;
       });
 
-      DocumentSnapshot doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user!.uid)
-          .get();
-
+      final doc = await _firestore.collection('users').doc(_currentUser!.uid).get();
+      
       if (doc.exists) {
-        String? dbUserName = doc['userName'] as String?;
-        setState(() {
-          progress = (doc['progress'] ?? 0.0).toDouble();
-          profileImageUrl = doc['profileImageUrl'];
-          isUserNameNull = dbUserName == null; // Check if username is null
-          nameController.text = dbUserName ?? ""; // Set to empty if null
-          isLoading = false;
-        });
-
-        // If username is null, we'll let the user enter it via TextField
-        // No need to set a default here; we'll handle it in the UI
+        _updateProfileState(doc);
       } else {
-        // Initialize default data if document doesn’t exist
-        await FirebaseFirestore.instance.collection('users').doc(user!.uid).set({
-          'progress': 0.0,
-          'completedTests': List.generate(10, (_) => false),
-          // Leave userName null initially
-        }, SetOptions(merge: true));
-        setState(() {
-          progress = 0.0;
-          nameController.text = "";
-          isUserNameNull = true; // No username yet
-          isLoading = false;
-        });
+        await _createInitialUserDoc();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
-        setState(() {
-          email = "Error loading email";
-          uid = "Error loading UID";
-          isLoading = false;
-        });
-      }
+      _handleError('Error loading profile: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _saveProfileImage(File image) async {
-    if (user == null) return;
+  Future<void> _saveProfileImage(XFile? image) async {
+    if (_currentUser == null || image == null) return;
 
     try {
-      String filePath = 'profile_images/${user!.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      UploadTask uploadTask = FirebaseStorage.instance.ref(filePath).putFile(image);
-      TaskSnapshot snapshot = await uploadTask;
-      String downloadUrl = await snapshot.ref.getDownloadURL();
+      setState(() => _isLoading = true);
 
-      await FirebaseFirestore.instance.collection('users').doc(user!.uid).set(
-        {'profileImageUrl': downloadUrl},
-        SetOptions(merge: true),
+      final Uint8List fileBytes = await image.readAsBytes();
+      if (fileBytes.isEmpty) throw Exception('Empty image file');
+
+      String category = 'profile/${_currentUser!.uid}';
+      String fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String filePath = '$category/$fileName';
+
+      await _supabase.storage.from('profile').uploadBinary(
+        filePath,
+        fileBytes,
+        fileOptions: FileOptions(contentType: 'image/jpeg'),
       );
 
-      if (mounted) {
-        setState(() {
-          profileImageUrl = downloadUrl;
-        });
-      }
+      final downloadUrl = _supabase.storage.from('profile').getPublicUrl(filePath);
+
+      await _firestore.collection('users').doc(_currentUser!.uid).update({
+        'profileImageUrl': downloadUrl,
+      });
+
+      if (mounted) setState(() => _profileImageUrl = downloadUrl);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving image: $e')),
-        );
-      }
+      debugPrint('Error uploading file: $e');
+      _handleError('Error saving image: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _saveUserName() async {
-    if (user == null || nameController.text.isEmpty) return;
+    if (_currentUser == null || _nameController.text.trim().isEmpty) return;
 
     try {
-      await FirebaseFirestore.instance.collection('users').doc(user!.uid).set(
-        {'userName': nameController.text},
-        SetOptions(merge: true),
-      );
-      setState(() {
-        isEditingName = false; // Exit edit mode
-        isUserNameNull = false; // Username is no longer null
+      setState(() => _isLoading = true);
+      await _firestore.collection('users').doc(_currentUser!.uid).update({
+        'userName': _nameController.text.trim(),
       });
-    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving name: $e')),
-        );
+        setState(() {
+          _isEditingName = false;
+          _isUserNameNull = false;
+        });
       }
+    } catch (e) {
+      _handleError('Error saving name: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final pickedFile = await ImagePicker().pickImage(source: source);
+      final pickedFile = await _imagePicker.pickImage(source: source);
       if (pickedFile != null && mounted) {
-        File imageFile = File(pickedFile.path);
-        await _saveProfileImage(imageFile);
+        await _saveProfileImage(pickedFile);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
-      }
+      _handleError('Error picking image: $e');
+    }
+  }
+
+  void _updateProfileState(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    if (mounted) {
+      setState(() {
+        _progress = (data['progress'] ?? 0.0).toDouble();
+        _profileImageUrl = data['profileImageUrl'] as String?;
+        _isUserNameNull = data['userName'] == null;
+        _nameController.text = data['userName'] ?? "";
+      });
+    }
+  }
+
+  Future<void> _createInitialUserDoc() async {
+    await _firestore.collection('users').doc(_currentUser!.uid).set({
+      'progress': 0.0,
+      'completedTests': List.generate(10, (_) => false),
+    }, SetOptions(merge: true));
+    
+    if (mounted) {
+      setState(() {
+        _progress = 0.0;
+        _nameController.text = "";
+        _isUserNameNull = true;
+      });
+    }
+  }
+
+  void _handleError(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+  }
+
+  void _redirectToLogin() {
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -166,80 +215,47 @@ class _ProfilePageState extends State<ProfilePage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera),
-                title: const Text("Take Photo"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.camera);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text("Choose from Gallery"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _pickImage(ImageSource.gallery);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera),
+              title: const Text("Take Photo"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text("Choose from Gallery"),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
   @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final Map<String, dynamic>? args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null) {
-      email = args['email'] ?? email;
-      uid = args['uid'] ?? uid;
+    if (_currentUser == null) {
+      return _buildLoginPrompt();
     }
 
-    if (user == null) {
-      return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Please log in to view your profile'),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-                child: const Text('Go to Login'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
       backgroundColor: Colors.blue,
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: const Text(
-          'Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
         actions: [
@@ -247,189 +263,210 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.refresh, color: Colors.white),
             onPressed: _loadProfileData,
           ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () async {
+              await _auth.signOut();
+              _redirectToLogin();
+            },
+            tooltip: 'Sign Out',
+          ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: _showImagePickerOptions,
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      image: DecorationImage(
-                        image: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                            ? NetworkImage(profileImageUrl!)
-                            : const AssetImage("assets/default_profile.png") as ImageProvider,
-                        fit: BoxFit.cover,
-                        onError: (error, stackTrace) {
-                          debugPrint("Error loading image: $error");
-                        },
-                      ),
-                    ),
+      body: _buildProfileBody(),
+    );
+  }
+
+  Widget _buildLoginPrompt() => Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('Please log in to view your profile'),
+          ElevatedButton(
+            onPressed: _redirectToLogin,
+            child: const Text('Go to Login'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _buildProfileBody() => SingleChildScrollView(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: 20),
+        _buildProfileImage(),
+        const SizedBox(height: 15),
+        _buildNameSection(),
+        Text(_email, style: const TextStyle(fontSize: 18, color: Colors.white70)),
+        const SizedBox(height: 20),
+        _buildProgressIndicator(),
+        const SizedBox(height: 20),
+        Text('${(_progress * 100).toInt()}% Completed',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        const SizedBox(height: 30),
+        _buildActionButtons(),
+      ],
+    ),
+  );
+
+  Widget _buildProfileImage() => GestureDetector(
+    onTap: _showImagePickerOptions,
+    child: Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 3),
+            image: DecorationImage(
+              image: _profileImageUrl?.isNotEmpty == true
+                  ? NetworkImage(_profileImageUrl!)
+                  : const AssetImage("assets/default_profile.png") as ImageProvider,
+              fit: BoxFit.cover,
+              onError: (_, __) => debugPrint("Error loading image"),
+            ),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.all(5),
+          child: CircleAvatar(
+            backgroundColor: Colors.white,
+            radius: 12,
+            child: Icon(Icons.camera_alt, color: Colors.blue, size: 24),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildNameSection() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 30),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: _isUserNameNull || _isEditingName
+              ? TextField(
+                  controller: _nameController,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: "Enter Name",
+                    hintStyle: TextStyle(color: Colors.white70),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.camera_alt, color: Colors.blue, size: 24),
+                  onSubmitted: (_) => _saveUserName(),
+                )
+              : Text(
+                  _nameController.text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+        ),
+        if (!_isUserNameNull)
+          IconButton(
+            icon: Icon(_isEditingName ? Icons.save : Icons.edit, color: Colors.white),
+            onPressed: () => _isEditingName ? _saveUserName() : setState(() => _isEditingName = true),
+          ),
+      ],
+    ),
+  );
+
+  Widget _buildProgressIndicator() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 30),
+    child: SizedBox(
+      height: 30,
+      child: Stack(
+        children: [
+          // Background of the progress bar
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          // Animated progress bar with gradient
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            width: MediaQuery.of(context).size.width * _progress * 0.8, // 80% of padded width
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Colors.blueAccent, Colors.lightBlue],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+          // Percentage text overlay
+          Center(
+            child: Text(
+              '${(_progress * 100).toInt()}%',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    blurRadius: 2,
+                    color: Colors.black54,
+                    offset: Offset(1, 1),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 15),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 30),
-            //   child: Row(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       isUserNameNull || isEditingName
-            //           ? Expanded(
-            //               child: TextField(
-            //                 controller: nameController,
-            //                 textAlign: TextAlign.center,
-            //                 style: const TextStyle(
-            //                   fontSize: 22,
-            //                   fontWeight: FontWeight.bold,
-            //                   color: Colors.white,
-            //                 ),
-            //                 decoration: const InputDecoration(
-            //                   border: InputBorder.none,
-            //                   hintText: "Enter Name",
-            //                   hintStyle: TextStyle(color: Colors.white70),
-            //                 ),
-            //                 onSubmitted: (value) => _saveUserName(),
-            //               ),
-            //             )
-            //           : Text(
-            //               nameController.text,
-            //               style: const TextStyle(
-            //                 fontSize: 22,
-            //                 fontWeight: FontWeight.bold,
-            //                 color: Colors.white,
-            //               ),
-            //             ),
-            //       if (!isUserNameNull) // Show edit/save button only if username exists
-            //         Row(
-            //           children: [
-            //             const SizedBox(width: 10),
-            //             IconButton(
-            //               icon: Icon(
-            //                 isEditingName ? Icons.save : Icons.edit,
-            //                 color: Colors.white,
-            //               ),
-            //               onPressed: () {
-            //                 if (isEditingName) {
-            //                   _saveUserName();
-            //                 } else {
-            //                   setState(() {
-            //                     isEditingName = true;
-            //                   });
-            //                 }
-            //               },
-            //             ),
-            //           ],
-            //         ),
-            //     ],
-            //   ),
-            // ),
-            Text(
-              email,
-              style: const TextStyle(fontSize: 18, color: Colors.white70),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 15,
-                backgroundColor: Colors.white,
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              '${(progress * 100).toInt()}% Completed',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 30),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/choose').then((_) {
-                      _loadProfileData();
-                    });
-                  },
-                  child: const Text(
-                    'Go to Actions',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
-                width: double.infinity,
-                height: 60,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    if (mounted) {
-                      Navigator.pushReplacementNamed(context, '/login');
-                    }
-                  },
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+
+  Widget _buildActionButtons() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Column(
+      children: [
+        _buildButton(
+          text: 'Go to Actions',
+          color: Colors.white,
+          textColor: Colors.blue,
+          onPressed: () => Navigator.pushNamed(context, '/choose').then((_) => _loadProfileData()),
+        ),
+        const SizedBox(height: 20),
+      ],
+    ),
+  );
+
+  Widget _buildButton({
+    required String text,
+    required Color color,
+    required Color textColor,
+    required VoidCallback onPressed,
+  }) => SizedBox(
+    width: double.infinity,
+    height: 60,
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      onPressed: onPressed,
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+      ),
+    ),
+  );
 }

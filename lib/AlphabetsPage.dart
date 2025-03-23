@@ -1,3 +1,4 @@
+import 'package:deaf/EnglishAlphabetsPage.dart';
 import 'package:flutter/material.dart';
 import 'GujaratiAlphabetsPage.dart'; // Import the Gujarati Alphabets Page
 
@@ -64,7 +65,10 @@ class AlphabetsPage extends StatelessWidget {
             // Box for English Alphabets (optional)
             GestureDetector(
               onTap: () {
-                // Add functionality for English Alphabets here
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => EnglishAlphabetsPage()),
+                );
               },
               child: Card(
                 color: Colors.white, // White box
