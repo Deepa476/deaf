@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(ShapeApp());
-}
-
 class ShapeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -17,44 +13,29 @@ class ShapeApp extends StatelessWidget {
 class ShapeAppPage extends StatelessWidget {
 final List<Map<String, String>> shapeWords = [
   {'english': 'Circle', 'gujarati': 'વૃત્ત',
-    'signImage': 'assets/Symbols/circle_S.png',
-    'photo': 'assets/Images/circle.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/circle%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/circle.jpg'},
   {'english': 'Square', 'gujarati': 'ચોરસ',
-    'signImage': 'assets/Symbols/square_S.png',
-    'photo': 'assets/Images/square.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/square%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/square.jpg'},
   {'english': 'Rectangle', 'gujarati': 'આયત',
-    'signImage': 'assets/Symbols/rectangle_S.png',
-    'photo': 'assets/Images/rectangle.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/rectangle%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/rectangle.jpg'},
   {'english': 'Triangle', 'gujarati': 'ત્રિકોણ',
-    'signImage': 'assets/Symbols/triangle_S.png',
-    'photo': 'assets/Images/triangle.png'},
-  {'english': 'Oval', 'gujarati': 'અંડાકાર',
-    'signImage': 'assets/Symbols/oval_S.png',
-    'photo': 'assets/Images/oval.png'},
-  {'english': 'Pentagon', 'gujarati': 'પાંચભુજ',
-    'signImage': 'assets/Symbols/pentagon_S.png',
-    'photo': 'assets/Images/pentagon.png'},
-  {'english': 'Hexagon', 'gujarati': 'ષટ્કોણ',
-    'signImage': 'assets/Symbols/hexagon_S.png',
-    'photo': 'assets/Images/hexagon.png'},
-  {'english': 'Heptagon', 'gujarati': 'સપ્તકોણ',
-    'signImage': 'assets/Symbols/heptagon_S.png',
-    'photo': 'assets/Images/heptagon.png'},
-  {'english': 'Octagon', 'gujarati': 'અષ્ટકોણ',
-    'signImage': 'assets/Symbols/octagon_S.png',
-    'photo': 'assets/Images/octagon.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/triangle%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/triangle.jpg'},
   {'english': 'Star', 'gujarati': 'તારો',
-    'signImage': 'assets/Symbols/star_S.png',
-    'photo': 'assets/Images/star.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/star%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/star.jpg'},
   {'english': 'Heart', 'gujarati': 'હ્રદય',
-    'signImage': 'assets/Symbols/heart_S.png',
-    'photo': 'assets/Images/heart.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/heart%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/heart.jpg'},
   {'english': 'Diamond', 'gujarati': 'હીરાકાર',
-    'signImage': 'assets/Symbols/diamond_S.png',
-    'photo': 'assets/Images/diamond.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/diamond%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/diamond.jpg'},
   {'english': 'Crescent', 'gujarati': 'અર્ધચંદ્ર',
-    'signImage': 'assets/Symbols/crescent_S.png',
-    'photo': 'assets/Images/crescent.png'},
+    'signImage': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/sign/crescent%20sign.jpg',
+    'photo': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/shapes/normal/crescent.jpg'},
 ];
 
 
@@ -261,7 +242,7 @@ class WordDetailPage extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
-                      child: Image.asset(
+                      child: Image.network(
                         word['signImage']!,
                         width: double.infinity,
                         height: double.infinity,
@@ -282,7 +263,7 @@ class WordDetailPage extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
-                      child: Image.asset(
+                      child: Image.network(
                         word['photo']!,
                         width: double.infinity,
                         height: double.infinity,

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'TestPage.dart'; // Import TestPage
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:deaf/ProfilePage.dart'; // Ensure this import is correct
+import 'package:deaf/TestPage.dart'; // Ensure this import is correct
 
 class ProgressTracking extends StatefulWidget {
   const ProgressTracking({super.key});
@@ -9,19 +12,107 @@ class ProgressTracking extends StatefulWidget {
 }
 
 class _ProgressTrackingState extends State<ProgressTracking> {
-  // List to track checkbox states
-  List<bool> checkedItems = List.generate(10, (index) => false);
+  List<bool> completedTests = List.generate(10, (index) => false);
+  double progress = 0.0;
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeUserAndLoadProgress();
+  }
+
+  Future<void> _initializeUserAndLoadProgress() async {
+    user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _loadProgress();
+    } else {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    if (user == null) return;
+
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user!.uid)
+          .get();
+
+      if (doc.exists) {
+        List<dynamic>? tests = doc['completedTests'] as List<dynamic>?;
+        if (tests != null) {
+          setState(() {
+            completedTests = List<bool>.from(tests);
+            progress = (completedTests.where((test) => test).length / completedTests.length);
+          });
+        } else {
+          // Initialize completedTests in Firestore if it doesn’t exist
+          await FirebaseFirestore.instance.collection('users').doc(user!.uid).set(
+            {
+              'completedTests': completedTests,
+              'progress': progress,
+            },
+            SetOptions(merge: true),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading progress: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _updateProgress(int index) async {
+    if (user == null || completedTests[index]) return;
+
+    try {
+      setState(() {
+        completedTests[index] = true;
+        progress = (completedTests.where((test) => test).length / completedTests.length);
+      });
+
+      await FirebaseFirestore.instance.collection('users').doc(user!.uid).set(
+        {
+          'completedTests': completedTests,
+          'progress': progress,
+        },
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating progress: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: Colors.blue, // Blue background
+      backgroundColor: Colors.blue,
       appBar: AppBar(
-        backgroundColor: Colors.blue, // Blue AppBar
+        backgroundColor: Colors.blue,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // Navigate back
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
           },
         ),
         title: const Text(
@@ -29,60 +120,56 @@ class _ProgressTrackingState extends State<ProgressTracking> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        elevation: 0, // Remove shadow
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView.builder(
-          itemCount: 10, // 10 items
+          itemCount: 10,
           itemBuilder: (context, index) {
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white, // White background
-                borderRadius: BorderRadius.circular(10), // Rounded corners
-                boxShadow: [
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.black12, // Light shadow
+                    color: Colors.black12,
                     blurRadius: 4,
                     spreadRadius: 2,
-                  )
+                  ),
                 ],
               ),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                leading: Checkbox(
-                  shape: const CircleBorder(), // Circular checkbox
-                  activeColor: Colors.blue, // Checked color
-                  value: checkedItems[index],
-                  onChanged: (bool? value) {
-                    setState(() {
-                      checkedItems[index] = value ?? false;
-                    });
-                  },
+                leading: Radio<bool>(
+                  value: true,
+                  groupValue: completedTests[index],
+                  onChanged: null, // Disabled to show status only
+                  activeColor: Colors.blue,
                 ),
                 title: Text(
                   'Test ${index + 1}',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios, color: Colors.blue),
-               onTap: () async {
-  // Wait for test result (true if 10/10, otherwise false)
-  bool? completed = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => TestPage(testNumber: index + 1, onTestCompleted: (int ) {  },),
-    ),
-  );
+                onTap: () async {
+                  if (!completedTests[index]) {
+                    bool? completed = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TestPage(
+                          testNumber: index + 1,
+                          onTestCompleted: () => _updateProgress(index),
+                        ),
+                      ),
+                    );
 
-  // If the test is completed with 10/10, update the checkbox
-  if (completed == true) {
-    setState(() {
-      checkedItems[index] = true;
-    });
-  }
-},
-
+                    if (completed == true) {
+                      await _updateProgress(index);
+                    }
+                  }
+                },
               ),
             );
           },

@@ -1,3 +1,4 @@
+import 'package:deaf/Animals.dart';
 import 'package:deaf/ProfilePage.dart';
 import 'package:deaf/ProgressTracking.dart';
 import 'package:deaf/choose_action.dart';
@@ -66,9 +67,9 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
       {'name': 'Alphabets', 'gujarati': 'અક્ષરમાળા'},
       {'name': 'Words', 'gujarati': 'શબ્દો'},
       {'name': 'Numbers', 'gujarati': 'અંક'},
+      {'name': 'Animals', 'gujarati': 'પ્રાણીઓ'},
       {'name': 'Colors', 'gujarati': 'રંગો'},
       {'name': 'Shapes', 'gujarati': 'આકારો'},
-      {'name': 'Animals', 'gujarati': 'પ્રાણીઓ'},
       {'name': 'Fruits', 'gujarati': 'ફળો'},
       {'name': 'Vegetables', 'gujarati': 'શાકભાજી'},
       {'name': 'Body Parts', 'gujarati': 'શરીરના ભાગો'},
@@ -180,6 +181,12 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
                         MaterialPageRoute(builder: (context) => VegetableList()),
                       );
                     }
+                    else if (filteredModules[index]['name'] == 'Animals') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AnimalApp()),
+                      );
+                    } 
                     // Add more conditions if you have other specific pages
                   },
                 );

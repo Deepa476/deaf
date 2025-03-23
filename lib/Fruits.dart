@@ -1,8 +1,5 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-void main() {
-  runApp(Fruits());
-}
 
 class Fruits extends StatelessWidget {
   @override
@@ -37,10 +34,6 @@ class FruitsPage extends StatelessWidget {
   'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/grapes%20sign.jpg',
   'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/grapes.jpg'
   },
-  {'english': 'Mango', 'gujarati': 'આમ',
-    'signImage': 'assets/sign_mango.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/photo_banana.jpg'
-    },
   {'english': 'Pineapple', 'gujarati': 'આનાસ',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/pineapple%20sign.jpg',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/pineapple.jpg'
@@ -57,33 +50,13 @@ class FruitsPage extends StatelessWidget {
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/cherry%20sign.jpg',
     'photo': 'ahttps://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/Cherry.jpg'
     },
-  {'english': 'Peach', 'gujarati': 'પીચ',
-    'signImage': 'assets/sign_peach.png',
-    'photo': 'assets/photo_peach.png'
-    },
-  {'english': 'Plum', 'gujarati': 'આંબા',
-    'signImage': 'assets/sign_plum.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/plum.jpg'
-    },
   {'english': 'Pomegranate', 'gujarati': 'દાડમ',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/pomegranate%20sign.jpg',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/pomegranate.jpg'
     },
-  {'english': 'Papaya', 'gujarati': 'પપૈયા',
-    'signImage': 'assets/sign_papaya.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/papaya.jpg'
-    },
-  {'english': 'Kiwi', 'gujarati': 'કીવી',
-    'signImage': 'assets/sign_kiwi.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/kiwi.jpg'
-    },
   {'english': 'Guava', 'gujarati': 'મામરડી',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/guava.jpg',
     'photo': 'ahttps://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/guava.jpg'
-    },
-  {'english': 'Lychee', 'gujarati': 'લિચી',
-    'signImage': 'assets/sign_lychee.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/Lychee.jpg'
     },
   {'english': 'Blueberry', 'gujarati': 'બ્લુબેરી',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/berry%20sign.jpg',
@@ -97,18 +70,6 @@ class FruitsPage extends StatelessWidget {
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/avocado%20sign.gif',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/avocado.jpg'
     },
-  {'english': 'Apricot', 'gujarati': 'ખุบણી',
-    'signImage': 'assets/sign_apricot.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/Apricot.jpg'
-    },
-  {'english': 'Fig', 'gujarati': 'અંગ્રેજી આંબા',
-    'signImage': 'assets/sign_fig.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/fig.jpg'
-    },
-  {'english': 'Date', 'gujarati': 'ખજૂર',
-    'signImage': 'assets/sign_date.png',
-    'photo': 'assets/photo_date.png'
-    },
   {'english': 'Raspberry', 'gujarati': 'રાસ્પબેરી',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/berry%20sign.jpg',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/Raspberry.jpg'
@@ -117,17 +78,9 @@ class FruitsPage extends StatelessWidget {
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/berry%20sign.jpg',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/blackberry.jpg'
     },
-  {'english': 'Mango', 'gujarati': 'આમ',
-    'signImage': 'assets/sign_mango.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/mango.jpg'
-    },
   {'english': 'Lemon', 'gujarati': 'લેમણ',
     'signImage': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits-sign/lemon%20sign.gif',
     'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/lemon.jpg'
-    },
-  {'english': 'Cucumber', 'gujarati': 'કાકરી',
-    'signImage': 'assets/sign_cucumber.png',
-    'photo': 'https://maatgqzlgvtqhywmblge.supabase.co/storage/v1/object/public/fruits/cucumber.jpg'
     },
   ];
 

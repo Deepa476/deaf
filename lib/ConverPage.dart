@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as https;
+import 'package:permission_handler/permission_handler.dart';
 
 class ConvertPage extends StatefulWidget {
   const ConvertPage({super.key});
@@ -28,6 +28,14 @@ class _ConvertPageState extends State<ConvertPage> {
   @override
   void initState() {
     super.initState();
+    _requestPermissions();
+  }
+
+  Future<void> _requestPermissions() async {
+    var status = await Permission.camera.status;
+    if (!status.isGranted) {
+      await Permission.camera.request();
+    }
     _initializeCamera();
   }
 
@@ -36,13 +44,16 @@ class _ConvertPageState extends State<ConvertPage> {
       cameras = await availableCameras();
       if (cameras == null || cameras!.isEmpty) {
         print("No cameras available.");
+        setState(() {
+          detectedText = "No cameras available.";
+        });
         return;
       }
 
       _cameraController?.dispose();
       _cameraController = CameraController(
         cameras![selectedCameraIndex],
-        ResolutionPreset.medium,
+        ResolutionPreset.high,
         enableAudio: false,
       );
 
@@ -52,7 +63,7 @@ class _ConvertPageState extends State<ConvertPage> {
       if (!mounted) return;
       setState(() {});
 
-      // Start capturing frames every 500 milliseconds for smoother predictions
+      // Start capturing frames every 500 milliseconds
       timer?.cancel();
       timer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
         _captureAndPredict();
@@ -151,59 +162,90 @@ class _ConvertPageState extends State<ConvertPage> {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       backgroundColor: Colors.blue,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.6,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: FutureBuilder(
-                  future: _initializeCameraFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return CameraPreview(_cameraController!);
-                    } else {
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    }
-                  },
+      body: Column(
+        children: [
+          Expanded(
+            child: FutureBuilder(
+              future: _initializeCameraFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  return Stack(
+                    children: [
+                      Positioned.fill(
+                        child: AspectRatio(
+                          aspectRatio: _cameraController!.value.aspectRatio,
+                          child: CameraPreview(_cameraController!),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 20,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.all(12),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            detectedText,
+                            style: const TextStyle(
+                              fontSize: 16, // Reduced font size
+                              color: Colors.greenAccent,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  );
+                }
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _switchCamera,
+                  icon: const Icon(Icons.cameraswitch, color: Colors.white),
+                  label: const Text("Switch Camera"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                 ),
-              ),
+                ElevatedButton.icon(
+                  onPressed: _toggleLanguage,
+                  icon: const Icon(Icons.language, color: Colors.white),
+                  label: Text(
+                    "Switch to ${currentLanguage == 'English' ? 'Gujarati' : 'English'}",
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 15),
-            ElevatedButton.icon(
-              onPressed: _switchCamera,
-              icon: const Icon(Icons.switch_camera, color: Colors.blue),
-              label: const Text("Switch Camera"),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: _toggleLanguage,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-              child: Text(
-                "Switch to ${currentLanguage == 'English' ? 'Gujarati' : 'English'}",
-                style: const TextStyle(color: Colors.blue),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                detectedText,
-                style: const TextStyle(fontSize: 24, color: Colors.greenAccent),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }

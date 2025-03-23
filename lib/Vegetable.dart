@@ -17,37 +17,30 @@ class MyApp extends StatelessWidget {
 class VegetableList extends StatelessWidget {
   // List of vegetable names in English and Gujarati
   final List<Map<String, String>> vegetables = [
-    {'english': 'Tomato', 'gujarati': 'ટમેટા'},
-    {'english': 'Potato', 'gujarati': 'બટાટા'},
-    {'english': 'Carrot', 'gujarati': 'ગાજર'},
-    {'english': 'Onion', 'gujarati': 'ડુંગળી'},
-    {'english': 'Spinach', 'gujarati': 'પાલક'},
-    {'english': 'Cabbage', 'gujarati': 'કોબી'},
-    {'english': 'Cauliflower', 'gujarati': 'ફુલાવર'},
-    {'english': 'Garlic', 'gujarati': 'લસણ'},
-    {'english': 'Ginger', 'gujarati': 'આદુ'},
-    {'english': 'Cucumber', 'gujarati': 'કાકડી'},
-    {'english': 'Brinjal', 'gujarati': 'રીંગણ'},
-    {'english': 'Ladyfinger', 'gujarati': 'ભીંડા'},
-    {'english': 'Bottle Gourd', 'gujarati': 'દૂધી'},
-    {'english': 'Pumpkin', 'gujarati': 'કદૂ'},
-    {'english': 'Bitter Gourd', 'gujarati': 'કરેલા'},
-    {'english': 'Capsicum', 'gujarati': 'શિમલા મરચા'},
-    {'english': 'Fenugreek Leaves', 'gujarati': 'મેથી'},
-    {'english': 'Peas', 'gujarati': 'વટાણા'},
-    {'english': 'Radish', 'gujarati': 'મૂળી'},
-    {'english': 'Turnip', 'gujarati': 'શલગમ'},
-    {'english': 'Beetroot', 'gujarati': 'ચુકંદર'},
-    {'english': 'Sweet Potato', 'gujarati': 'શક્કરિયાં'},
-    {'english': 'Broccoli', 'gujarati': 'બ્રોકોલી'},
-    {'english': 'Zucchini', 'gujarati': 'તુરિયાં'},
-    {'english': 'Lettuce', 'gujarati': 'લેટીસ'},
-    {'english': 'Drumstick', 'gujarati': 'સુંગટા'},
-    {'english': 'Green Beans', 'gujarati': 'શીમ'},
-    {'english': 'Cluster Beans', 'gujarati': 'ગવાર ફળી'},
-    {'english': 'Chili Pepper', 'gujarati': 'મરચું'},
-    {'english': 'Coriander', 'gujarati': 'ધાણા'},
-    {'english': 'Mint Leaves', 'gujarati': 'ફુદીનો'},
+    {'english': 'Tomato', 'gujarati': 'ટમેટા',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/tomato.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/tomato%20sign.gif'},
+    {'english': 'Potato', 'gujarati': 'બટાટા',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/potato.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/potato%20sign.gif'},
+    {'english': 'Carrot', 'gujarati': 'ગાજર',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/carrot.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/carrot%20sign.jpg'},
+    {'english': 'Onion', 'gujarati': 'ડુંગળી',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/onion.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/onion%20sign.gif'},
+    {'english': 'Cabbage', 'gujarati': 'કોબી',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/cabbage.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/cabbage%20sign.jpg'},
+    {'english': 'Garlic', 'gujarati': 'લસણ',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/garlic.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/garlic%20sign.jpg'},
+    {'english': 'Brinjal', 'gujarati': 'રીંગણ',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/brinjal.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/brinjal%20sign.jpg'},
+    {'english': 'Bottle Gourd', 'gujarati': 'દૂધી',
+    'normal': 'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/normal/bottle%20gourd.jpg',
+    'signImage':'https://vrficwgiqdstlgvcqasu.supabase.co/storage/v1/object/public/learningmodule/vegetables/sign/bottle%20gourd%20sign.jpg'},
   ];
 
   @override
@@ -222,12 +215,15 @@ class VegetableDetailPage extends StatelessWidget {
                 Container(
                   height: 100,
                   color: Colors.grey[300],
-                  child: Center(
-                    child: Text(
-                      'Sign Language for ${vegetable['english']}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Image.network(
+                        vegetable['normal']!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ),
                 ),
                 SizedBox(height: 30),
                 // Placeholder for vegetable image
@@ -245,12 +241,15 @@ class VegetableDetailPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Center(
-                    child: Text(
-                      'Image of ${vegetable['english']}',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12.0),
+                      child: Image.network(
+                        vegetable['signImage']!,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                  ),
                 ),
                 SizedBox(height: 30),
                 // Box for English name
