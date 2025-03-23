@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "861585927967",
+    "project_id": "deafandmute-46a12",
+    "storage_bucket": "deafandmute-46a12.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:861585927967:android:a267e1390d029cdf64ca2a",
+        "android_client_info": {
+          "package_name": "com.example.deaf"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChb0oJU4HpC0jhl2Nn_JJlF6gdFTJGtys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
