@@ -56,7 +56,7 @@ class _LearnAlphabetPageState extends State<LearnAlphabetPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.lightBlue[50], // Softer background color
+      backgroundColor: Colors.lightBlue, // Softer background color
       body: SafeArea(
         child: Stack(
           children: [

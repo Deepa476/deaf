@@ -90,8 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.blue,
+      backgroundColor: theme.scaffoldBackgroundColor, // Uses Colors.blue from theme
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -100,13 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   'Welcome to Signyyy',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: theme.textTheme.headlineLarge, // White, bold, 32pt from theme
                 ),
                 const SizedBox(height: 40),
                 Container(
@@ -126,27 +124,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
+                      Text(
                         'Login',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                        style: theme.textTheme.headlineMedium, // Black, bold, 24pt from theme
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: emailController,
                         decoration: InputDecoration(
                           hintText: 'Enter your email',
-                          filled: true,
-                          fillColor: Colors.grey[200],
                           errorText: _isEmailEmpty ? 'Email is required' : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide: BorderSide.none,
-                          ),
                         ),
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
@@ -162,13 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: true,
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
-                          filled: true,
-                          fillColor: Colors.grey[200],
                           errorText: _isPasswordEmpty ? 'Password is required' : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide: BorderSide.none,
-                          ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -188,17 +170,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _loginUser(context, email, password);
                                 }
                               },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                              ),
                               child: const Text(
                                 'Login',
                                 style: TextStyle(
-                                  color: Colors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -216,10 +190,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             onTap: () {
                               Navigator.pushNamed(context, AppRoutes.signup);
                             },
-                            child: const Text(
+                            child: Text(
                               'Create an account',
                               style: TextStyle(
-                                color: Colors.blue,
+                                color: theme.primaryColor, // Uses Colors.blue
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

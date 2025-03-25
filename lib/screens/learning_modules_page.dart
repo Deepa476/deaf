@@ -4,12 +4,10 @@ import 'package:deaf/ProfilePage.dart';
 import 'package:deaf/Shape.dart';
 import 'package:deaf/Vegetable.dart';
 import 'package:deaf/WordModuleCard.dart';
-
 import 'package:deaf/ProgressTracking.dart';
 import 'package:deaf/choose_action.dart';
 import 'package:flutter/material.dart';
 import 'AlphabetsPage.dart';
-
 
 // Navigation routes enum
 enum AppRoutes { home, courses, assignment, settings, profile }
@@ -39,9 +37,9 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
     ModuleData(name: 'Alphabets', gujaratiTranslation: 'અક્ષરમાળા', page: const AlphabetsPage()),
     ModuleData(name: 'Words', gujaratiTranslation: 'શબ્દો', page: DailyWordsPage()),
     ModuleData(name: 'Numbers', gujaratiTranslation: 'અંક', page: const SizedBox()),
-    ModuleData(name: 'Animals', gujaratiTranslation: 'પ્રાણીઓ', page:  AnimalApp()),
+    ModuleData(name: 'Animals', gujaratiTranslation: 'પ્રાણીઓ', page: AnimalApp()),
     ModuleData(name: 'Colors', gujaratiTranslation: 'રંગો', page: const SizedBox()),
-    ModuleData(name: 'Shapes', gujaratiTranslation: 'આકારો', page:  ShapeAppPage()),
+    ModuleData(name: 'Shapes', gujaratiTranslation: 'આકારો', page: ShapeAppPage()),
     ModuleData(name: 'Fruits', gujaratiTranslation: 'ફળો', page: FruitsPage()),
     ModuleData(name: 'Vegetables', gujaratiTranslation: 'શાકભાજી', page: VegetableList()),
     ModuleData(name: 'Body Parts', gujaratiTranslation: 'શરીરના ભાગો', page: const SizedBox()),
@@ -88,34 +86,27 @@ class _LearningModulesPageState extends State<LearningModulesPage> {
   @override
   Widget build(BuildContext context) {
     final filteredModules = _getFilteredModules();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.lightBlueAccent, Colors.blue],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              CustomAppBar(onBackPressed: () => Navigator.pop(context)),
-              SearchBar(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
+      backgroundColor: theme.scaffoldBackgroundColor, // Uses Colors.blue from theme
+      body: SafeArea(
+        child: Column(
+          children: [
+            CustomAppBar(onBackPressed: () => Navigator.pop(context)),
+            SearchBar(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
+            ),
+            SectionHeader(title: 'Learning Modules'),
+            ModulesList(
+              modules: filteredModules,
+              onModuleTap: (module) => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => module.page),
               ),
-              const SectionHeader(title: 'Learning Modules'),
-              ModulesList(
-                modules: filteredModules,
-                onModuleTap: (module) => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => module.page),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: AppBottomNavigationBar(
@@ -133,30 +124,31 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black26, // Matches LoginScreen shadow
             blurRadius: 10,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.lightBlue, size: 28),
+            icon: Icon(Icons.arrow_back, color: theme.primaryColor, size: 28),
             onPressed: onBackPressed,
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Signyy',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.lightBlue,
+                color: theme.primaryColor, // Uses Colors.blue
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
@@ -185,12 +177,12 @@ class SearchBar extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(12), // Matches LoginScreen
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black26, // Matches LoginScreen shadow
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -219,21 +211,14 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.lightBlueAccent,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-      ),
+      color: theme.primaryColor, // Uses Colors.blue instead of lightBlueAccent
       child: Text(
         title,
-        style: const TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [Shadow(color: Colors.black26, offset: Offset(1, 1), blurRadius: 2)],
-        ),
+        style: theme.textTheme.headlineLarge, // White, bold, 32pt from theme
       ),
     );
   }
@@ -281,6 +266,7 @@ class AnimatedModuleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -289,26 +275,26 @@ class AnimatedModuleCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(12), // Matches LoginScreen
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black26, // Matches LoginScreen shadow
               blurRadius: 10,
-              offset: const Offset(0, 4),
+              offset: Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(32), // Matches LoginScreen inner padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 moduleName,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.lightBlue,
+                  color: theme.primaryColor, // Uses Colors.blue
                 ),
               ),
               const SizedBox(height: 8),
@@ -343,13 +329,14 @@ class AppBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black26, // Matches LoginScreen shadow
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
@@ -357,7 +344,7 @@ class AppBottomNavigationBar extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         items: _navItems,
         currentIndex: currentIndex,
-        selectedItemColor: Colors.lightBlue,
+        selectedItemColor: theme.primaryColor, // Uses Colors.blue
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
         elevation: 0,

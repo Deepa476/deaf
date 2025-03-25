@@ -120,7 +120,7 @@ class _EnglishAlphabetsPageState extends State<EnglishAlphabetsPage> {
         elevation: 2,
       ),
       body: Container(
-        color: Colors.lightBlue[50],
+        color: Colors.lightBlue,
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : errorMessage != null

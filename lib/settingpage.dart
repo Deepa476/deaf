@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Settings Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Reverted to original theme
+        primarySwatch: Colors.lightBlue, // Reverted to original theme
       ),
       home: const SettingsPage(),
     );
@@ -37,7 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
-        backgroundColor: Colors.blue, // Matches the original theme
+        backgroundColor: Colors.lightBlue, // Matches the original theme
         elevation: 2,
       ),
       body: Padding(
@@ -49,7 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
               title: const Text('Notifications'),
               subtitle: const Text('Enable push notifications'),
               value: _notificationsEnabled,
-              activeColor: Colors.blue, // Matches the theme
+              activeColor: Colors.lightBlue, // Matches the theme
               secondary: const Icon(Icons.notifications),
               onChanged: (bool value) {
                 setState(() {
@@ -94,7 +94,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   max: 100,
                   divisions: 100,
                   label: _volumeLevel.round().toString(),
-                  activeColor: Colors.blue, // Matches the theme
+                  activeColor: Colors.lightBlue, // Matches the theme
                   onChanged: (value) {
                     setState(() {
                       _volumeLevel = value;
@@ -125,7 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: const Icon(Icons.save),
                 label: const Text('Save Settings'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Matches the theme
+                  backgroundColor: Colors.lightBlue, // Matches the theme
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 onPressed: () {
